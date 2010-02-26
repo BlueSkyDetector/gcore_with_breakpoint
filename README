@@ -1,0 +1,123 @@
+I made gcore_with_breakpoint from gcore sh script in gdb.
+Now you can get core file with setting breakpoint without stopping process.
+In a narrow sense, though it attach and stop the process in a moment, it's negligible effect.
+You can also get multi core files from multi processes by program name by "-n". or multi pid.
+
+The usage is following.
+
+  usage: gcore_with_breakpoint [-o filename] [-b breakpoint] [-n prog_name | pid]
+
+If the process goes in the breakpoint, you can stop by Ctrl-C.
+The breakpoint expression is following. (same as gdb)
+
+  -b "functionname"
+  -b "filename:functionname"
+  -b "filename:linenumber"
+  -b "*address"
+
+
+Sample1:
+
+The target program name is "zabbix_agentd".
+Then, you can get core.7995 which breaks at "common.c:140".
+
+# gcore_with_breakpoint -b "common.c:140" -n zabbix_agentd
+
+Using host libthread_db library "/lib64/libthread_db.so.1".
+Using host libthread_db library "/lib64/libthread_db.so.1".
+Using host libthread_db library "/lib64/libthread_db.so.1".
+Using host libthread_db library "/lib64/libthread_db.so.1".
+Using host libthread_db library "/lib64/libthread_db.so.1".
+Using host libthread_db library "/lib64/libthread_db.so.1".
+0x00000036642954f0 in __nanosleep_nocancel () from /lib64/libc.so.6
+0x00000036642c7d63 in __select_nocancel () from /lib64/libc.so.6
+0x00000036642c7d63 in __select_nocancel () from /lib64/libc.so.6
+0x00000036642c7d63 in __select_nocancel () from /lib64/libc.so.6
+0x00000036642954f0 in __nanosleep_nocancel () from /lib64/libc.so.6
+0x00000036642950f5 in waitpid () from /lib64/libc.so.6
+Breakpoint 1 at 0x40e143: file common.c, line 140.
+Breakpoint 1 at 0x40e143: file common.c, line 140.
+Breakpoint 1 at 0x40e143: file common.c, line 140.
+Breakpoint 1 at 0x40e143: file common.c, line 140.
+Breakpoint 1 at 0x40e143: file common.c, line 140.
+Breakpoint 1 at 0x40e143: file common.c, line 140.
+
+Breakpoint 1, AGENT_VERSION (cmd=0x7fff4a8ff780 "agent.version", param=0x7fff4a8fef80 "", flags=0, result=0x7fff4a902890) at common.c:141
+141	{
+Saved corefile core.7995
+
+Program received signal SIGINT, Interrupt.
+0x00000036642c7d63 in __select_nocancel () from /lib64/libc.so.6
+
+Program received signal SIGINT, Interrupt.
+0x00000036642950f5 in waitpid () from /lib64/libc.so.6
+
+Program received signal SIGINT, Interrupt.
+0x00000036642954f0 in __nanosleep_nocancel () from /lib64/libc.so.6
+
+Program received signal SIGINT, Interrupt.
+0x00000036642c7d63 in __select_nocancel () from /lib64/libc.so.6
+
+Program received signal SIGINT, Interrupt.
+0x00000036642954f0 in __nanosleep_nocancel () from /lib64/libc.so.6
+Saved corefile core.7994
+Saved corefile core.7997
+Saved corefile core.7990
+Saved corefile core.7993
+Saved corefile core.7996
+
+
+Sample2:
+
+The target program name is "zabbix_agentd".
+Then, you can get zabbix_agentd_core.7995 which breaks at "*0x40e143".
+"*0x40e143" is address of "common.c:140".
+If you don't have debug symbol, you cannot set breakpoint by "common.c:140".
+But you can set "*0x40e143" if you know the address of "common.c:140".
+It's helpful when your customer don't have debug symbol but you have one.
+
+# gcore_with_breakpoint -o zabbix_agentd_core -b "*0x40e143" -n zabbix_agentd
+Using host libthread_db library "/lib64/libthread_db.so.1".
+Using host libthread_db library "/lib64/libthread_db.so.1".
+Using host libthread_db library "/lib64/libthread_db.so.1".
+Using host libthread_db library "/lib64/libthread_db.so.1".
+Using host libthread_db library "/lib64/libthread_db.so.1".
+Using host libthread_db library "/lib64/libthread_db.so.1".
+0x00000036642950f5 in waitpid () from /lib64/libc.so.6
+Breakpoint 1 at 0x40e143: file common.c, line 141.
+0x00000036642954f0 in __nanosleep_nocancel () from /lib64/libc.so.6
+Breakpoint 1 at 0x40e143: file common.c, line 141.
+0x00000036642c7d63 in __select_nocancel () from /lib64/libc.so.6
+Breakpoint 1 at 0x40e143: file common.c, line 141.
+0x00000036642c7d63 in __select_nocancel () from /lib64/libc.so.6
+Breakpoint 1 at 0x40e143: file common.c, line 141.
+0x00000036642954f0 in __nanosleep_nocancel () from /lib64/libc.so.6
+0x00000036642c7d63 in __select_nocancel () from /lib64/libc.so.6
+Breakpoint 1 at 0x40e143: file common.c, line 141.
+Breakpoint 1 at 0x40e143: file common.c, line 141.
+
+Breakpoint 1, AGENT_VERSION (cmd=0x7fff4a8ff780 "agent.version", param=0x7fff4a8fef80 "", flags=0, result=0x7fff4a902890) at common.c:141
+141	{
+Saved corefile zabbix_agentd_core.7995
+
+Program received signal SIGINT, Interrupt.
+0x00000036642950f5 in waitpid () from /lib64/libc.so.6
+
+Program received signal SIGINT, Interrupt.
+0x00000036642954f0 in __nanosleep_nocancel () from /lib64/libc.so.6
+
+Program received signal SIGINT, Interrupt.
+0x00000036642c7d63 in __select_nocancel () from /lib64/libc.so.6
+
+Program received signal SIGINT, Interrupt.
+0x00000036642c7d63 in __select_nocancel () from /lib64/libc.so.6
+
+Program received signal SIGINT, Interrupt.
+0x00000036642954f0 in __nanosleep_nocancel () from /lib64/libc.so.6
+Saved corefile zabbix_agentd_core.7996
+Saved corefile zabbix_agentd_core.7994
+Saved corefile zabbix_agentd_core.7993
+Saved corefile zabbix_agentd_core.7997
+Saved corefile zabbix_agentd_core.7990
+
+
