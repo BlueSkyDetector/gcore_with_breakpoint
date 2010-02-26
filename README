@@ -25,7 +25,7 @@ The usage is following.
 
   usage: gcore_with_breakpoint [-o filename] [-b breakpoint] [-n prog_name | pid]
 
-If the process goes in the breakpoint, you can stop by Ctrl-C.
+If the process never goes in to the breakpoint, you can stop by Ctrl-C.
 The breakpoint expression is following. (same as gdb)
 
   -b "functionname"
