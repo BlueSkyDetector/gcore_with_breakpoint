@@ -93,7 +93,7 @@ function get_child_child_pid ()
 	echo $child_child_pids
 }
 
-function get_gid_pid ()
+function get_gdb_pid ()
 {
 	child_child_pid=$(get_child_child_pid $1|sed s/\ /\,/g)
 	if [ "$child_child_pid" == "" ]
@@ -143,7 +143,7 @@ EOF
 	    rc=1
 	    break
 	fi
-	gdb_pid_list=$(get_gid_pid $$)
+	gdb_pid_list=$(get_gdb_pid $$)
 	if [ "$gdb_pid_list" != "" ] ; then
 		kill -INT $gdb_pid_list  > /dev/null 2>&1
 	fi
@@ -160,9 +160,9 @@ for pid in $pid_list
 do
 	get_core &
 done
-#sleep 5
-while [ "$(get_gid_pid $$)" != "" ] ; do
-	sleep 2
+
+while [ "$(pgrep -P $$)" != "" ] ; do
+	sleep 1
 done
 
 exit $rc
